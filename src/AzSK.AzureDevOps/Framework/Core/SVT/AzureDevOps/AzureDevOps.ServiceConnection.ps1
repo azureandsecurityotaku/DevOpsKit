@@ -12,10 +12,14 @@ class ServiceConnection: SVTBase
         $projectObj = [WebRequestHelper]::InvokeGetWebRequest($apiURL);
         $this.ProjectId = $projectObj.id
 
+        $projectObj = $null;
+
         # Get security namespace identifier of service endpoints.
         $apiURL = "https://dev.azure.com/{0}/_apis/securitynamespaces?api-version=5.0" -f $($this.SubscriptionContext.SubscriptionName)
         $securityNamespacesObj = [WebRequestHelper]::InvokeGetWebRequest($apiURL);
         $this.SecurityNamespaceId = ($securityNamespacesObj | Where-Object { ($_.Name -eq "ServiceEndpoints")}).namespaceId
+        
+        $securityNamespacesObj = $null;
 
         # Get service connection details https://dev.azure.com/{organization}/{project}/_admin/_services 
         $this.ServiceEndpointsObj = $this.ResourceContext.ResourceDetails
@@ -46,6 +50,7 @@ class ServiceConnection: SVTBase
             $controlResult.AddMessage([VerificationResult]::Verify,
                                         "Service endpoint details not found. Verify connection access is scoped at RG level");
         }
+        $Endpoint = $null;
         return $controlResult;
     }
 
@@ -87,6 +92,7 @@ class ServiceConnection: SVTBase
                                             "Service Endpoints is Cert based authenticated");
             }
         }
+        $Endpoint = $null;
         return $controlResult;
     }
 
@@ -111,6 +117,8 @@ class ServiceConnection: SVTBase
             }
         }
           
+        $Endpoint =$null;
+        $serverFileContent = $null;
         return $controlResult;
     }
 
@@ -134,7 +142,8 @@ class ServiceConnection: SVTBase
                 $controlResult.AddMessage([VerificationResult]::Passed,"");
             }
             
-            
+          $Endpoint = $null; 
+          $responseObj = $null; 
         }
         catch {
             $failMsg = $_
@@ -177,11 +186,13 @@ class ServiceConnection: SVTBase
                                 $nonCompliantIdentities += $identity
                             }
                         }
+                        $identityObj = $null;
                     }
                     catch
                     {
                         $otherIdentities += @{ ServiceConnectionName = $($Endpoint.name); Identity = $($identity)}
                     }
+                    $identity = $null;
                 }
                 if($IsGlobalSecurityGroupPermitted -eq $true)
                 {
@@ -192,6 +203,10 @@ class ServiceConnection: SVTBase
                     $controlResult.AddMessage([VerificationResult]::Passed,"");
                 }
             }
+
+            $Endpoint = $null;
+            $responseObj = $null;
+            $nonCompliantIdentities = $null;
         }
         catch {
             $failMsg = $_
@@ -245,6 +260,7 @@ class ServiceConnection: SVTBase
                     {
                         $otherIdentities += @{ ServiceConnectionName = $($Endpoint.name); Identity = $($identity)}
                     }
+                    $identity = $null;
                 }
                 if($IsGlobalSecurityGroupPermitted -eq $true)
                 {
@@ -255,6 +271,8 @@ class ServiceConnection: SVTBase
                     $controlResult.AddMessage([VerificationResult]::Passed,"");
                 }
             }
+
+            $responseObj = $null;
         }
         catch {
             $failMsg = $_
@@ -285,6 +303,8 @@ class ServiceConnection: SVTBase
                else {
                 $controlResult.AddMessage([VerificationResult]::Passed, "Service connection is not granted access to all pipeline");
                }
+
+               $responseObj = $null;
            }
         catch {
             $controlResult.AddMessage([VerificationResult]::Manual,"Unable to fetch service connection details. $($_) Please verify from portal that you are not granting all pipeline access to service connections");
@@ -307,6 +327,7 @@ class ServiceConnection: SVTBase
                 $controlResult.AddMessage([VerificationResult]::Failed, "Service connection $($Endpoint.name) is authenticated via $($Endpoint.authorization.scheme)");
             }
         }
+        $Endpoint = $null;
         return $controlResult;
     }
 
