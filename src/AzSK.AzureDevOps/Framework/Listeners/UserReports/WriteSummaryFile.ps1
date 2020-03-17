@@ -344,7 +344,7 @@ class WriteSummaryFile: FileOutputBase
 					}					
                     $csvItems += $csvItem;
                 }                                
-            }
+            } 
         } 
 
         if ($csvItems.Count -gt 0) {
@@ -362,7 +362,8 @@ class WriteSummaryFile: FileOutputBase
 			{
 			  $nonNullProps += "UserComments";
 			}
-            $csvItems | Select-Object -Property $nonNullProps | Export-Csv $this.FilePath -NoTypeInformation
+			#$csvItems | Select-Object -Property $nonNullProps | Export-Csv $this.FilePath -NoTypeInformation
+			($csvItems | Select-Object -Property $nonNullProps) | Group-Object -Property FeatureName | Foreach-Object {$_.Group | Export-Csv -Path $this.FilePath -append -NoTypeInformation}
         }
     }	
 
